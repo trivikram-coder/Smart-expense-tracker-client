@@ -63,7 +63,7 @@ const Account = () => {
 
     try {
       const res = await fetch(`${apiUrl}/auth/user/${storedUserId}`, {
-
+      
         method: "PUT",
         headers: { "Content-Type": "application/json",
           "authorization":`Bearer ${token}`
