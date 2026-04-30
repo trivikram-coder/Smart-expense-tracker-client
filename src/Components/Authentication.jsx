@@ -13,6 +13,7 @@ const Authentication = () => {
     password: "",
     otp: "",
   });
+  const[isLoading,setIsLoading]=useState(false)
   const [showPassword, setShowPassword] = useState(false);
   useEffect(()=>{
     const token=localStorage.getItem("token")||""
@@ -37,10 +38,12 @@ const Authentication = () => {
   // 🔹 Send OTP or Login/Register
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isLoading) return;
+    setIsLoading(true);
 
-    if (isLogin) {
-      // ---- LOGIN ----
-      try {
+    try {
+      if (isLogin) {
+        // ---- LOGIN ----
         const res = await fetch(
           `${apiUrl}/auth/login`,
           {
@@ -55,7 +58,6 @@ const Authentication = () => {
         const data = await res.json();
         if (res.status === 200) {
   localStorage.setItem("token", data.token);
-
   // 🔥 fetch user immediately using NEW token
   const userRes = await fetch(`${apiUrl}/auth/user`, {
     headers: {
@@ -68,13 +70,11 @@ const Authentication = () => {
 
   toast.success("Login successful");
   window.location.href = "/dashboard"; // NO setTimeout
-} else toast.error(data.message);
-      } catch {
-        toast.error("Server error");
-      }
-    } else {
-      // ---- REGISTER: STEP 1 → SEND OTP ----
-      try {
+        } else {
+          toast.error(data.message);
+        }
+      } else {
+        // ---- REGISTER: STEP 1 → SEND OTP ----
         const res = await fetch(`${emailUrl}/otp/send-otp`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -89,15 +89,19 @@ const Authentication = () => {
           toast.success("OTP sent to your email");
           setStep("otp"); // move to OTP screen
         } else toast.error(data.message);
-      } catch (err) {
-        toast.error("Unable to send OTP");
       }
+    } catch {
+      toast.error(isLogin ? "Server error" : "Unable to send OTP");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // 🔹 Verify OTP & Create User
   const handleOtpVerify = async (e) => {
     e.preventDefault();
+    if (isLoading) return;
+    setIsLoading(true);
     try {
       const res = await fetch(
         `${emailUrl}/otp/verify-otp/${formData.email}`,
@@ -138,6 +142,8 @@ const Authentication = () => {
       }
     } catch {
       toast.error("OTP validation failed");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -206,9 +212,10 @@ const Authentication = () => {
 
               <button
                 type="submit"
+                disabled={isLoading}
                 className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition cursor-pointer"
               >
-                {isLogin ? "Login" : "Send OTP"}
+                {isLoading ? "Please wait..." : isLogin ? "Login" : "Send OTP"}
               </button>
             </form>
 
@@ -218,6 +225,7 @@ const Authentication = () => {
                 : "Already have an account?"}{" "}
               <button
                 className="text-blue-500 hover:underline cursor-pointer"
+                disabled={isLoading}
                 onClick={() => {
                   setIsLogin(!isLogin);
                   setStep("form");
@@ -263,9 +271,10 @@ const Authentication = () => {
               />
               <button
                 type="submit"
+                disabled={isLoading}
                 className="bg-green-500 text-white py-2 rounded hover:bg-green-600 transition cursor-pointer"
               >
-                Verify OTP
+                {isLoading ? "Please wait..." : "Verify OTP"}
               </button>
             </form>
 
@@ -273,6 +282,7 @@ const Authentication = () => {
               Didn’t get OTP?{" "}
               <button
                 className="text-blue-500 hover:underline"
+                disabled={isLoading}
                 onClick={() => handleSubmit(new Event("resend"))}
               >
                 Resend

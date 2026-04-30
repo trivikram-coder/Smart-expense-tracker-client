@@ -14,7 +14,7 @@ const Dashboard = () => {
 
   const [expenses, setExpenses] = useState([]);       // paginated
   const [allExpenses, setAllExpenses] = useState([]); // FULL DATA
-
+  const[loading,setLoading]=useState(true)
   const [budget, setBudget] = useState(0);
 
   const [page, setPage] = useState(1);
@@ -39,6 +39,7 @@ const Dashboard = () => {
     setExpenses(sortedPaginated);
     setAllExpenses(sortedFull);
     setTotalCount(data.totalCount);
+    setLoading(false)
 })
       .catch((err) => console.log(err));
   }, [userId, page]);
@@ -196,7 +197,15 @@ function checkLimit(){
                 </thead>
 
                 <tbody className="divide-y divide-gray-100 text-sm sm:text-base">
-                  {expenses.length === 0 ? (
+                  {loading?(
+                    <tr>
+                    <td colSpan={5} className="py-10">
+                      <div className="flex items-center justify-center">
+                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-green-500 border-t-transparent"></div>
+                      </div>
+                    </td>
+                  </tr>
+                  ):expenses.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="text-center py-4 text-gray-400">
                         No expenses yet

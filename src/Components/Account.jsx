@@ -96,8 +96,11 @@ const Account = () => {
     setUser(null);
   };
 
-  if (loading) return <p className="text-center mt-10">Loading...</p>;
-
+  if (loading) {
+    return <div className="flex items-center justify-center">
+                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-green-500 border-t-transparent"></div>
+                      </div>
+                      }
   if (!user) {
     return (
       <div className="bg-white p-6 rounded-lg shadow-md text-center max-w-md mx-auto mt-10">
